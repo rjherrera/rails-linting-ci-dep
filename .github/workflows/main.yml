@@ -1,0 +1,25 @@
+name: Ateles
+
+on: [pull_request]
+
+jobs:
+  pronto:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions/setup-ruby
+      with:
+        ruby-version: echo $(cat .ruby-version)
+    - uses: actions/cache@v1
+      with:
+        path: /opt/hostedtoolcache/Ruby/
+        key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gem-
+    - run: gem install bundler:$(cat Gemfile.lock | tail -1 | tr -d " ")
+    - run: gem install pronto $(cat Gemfile | awk 'match($2, /(pronto-[a-z_0-9]+)/, x) {print x[0]}' | paste -sd ' ' -)
+    - run: $GEM_PATH
+    - run: git fetch
+    - run: PRONTO_PULL_REQUEST_ID="$(jq --raw-output .number "$GITHUB_EVENT_PATH")" PRONTO_GITHUB_ACCESS_TOKEN="${{ secrets.PRONTO_GITHUB_TOKEN }}" pronto run -f github_status github_pr -c origin/master
