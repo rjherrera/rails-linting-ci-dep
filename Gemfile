@@ -51,9 +51,8 @@ group :development, :test do
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'guard-rspec', require: false
-  gem 'pronto-brakeman', require: false
   gem 'pronto-eslint', require: false
-  gem "pronto-rubocop", require: false
+  gem 'pronto-rubocop', require: false
   gem 'pry-byebug'
   gem 'pry-rails'
   gem 'rspec-nc', require: false
