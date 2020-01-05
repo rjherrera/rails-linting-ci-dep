@@ -14,9 +14,3 @@
 //= require activestorage
 //= require turbolinks
 //= require_tree .
-
-function stuff() {
-  var d = '11';
-
-  return 12 + 11;
-}
