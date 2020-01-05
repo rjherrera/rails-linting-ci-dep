@@ -10,6 +10,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@master
+      with:
+        fetch-depth: 0
     - name: Get ruby and node versions
       run: |
         echo "::set-env name=RUBY_VERSION::$(cat .ruby-version)"
@@ -46,10 +48,9 @@ jobs:
       run: |
           mkdir -p $HOME/bin && curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s -- -b $HOME/bin
           echo ::add-path::$HOME/bin
-    - run: git fetch
     - name: Run reviewdog
       env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.PRONTO_GITHUB_TOKEN }}
       run: |
-          bundle exec rubocop $(git diff master --name-only) | reviewdog -reporter=github-pr-review -f=rubocop
-          npx eslint $(git diff master --name-only) | reviewdog -reporter=github-pr-review -f=eslint
+          bundle exec rubocop $(git diff origin/master --name-only) | reviewdog -reporter=github-pr-review -f=rubocop
+          npx eslint $(git diff origin/master --name-only) | reviewdog -reporter=github-pr-review -f=eslint
