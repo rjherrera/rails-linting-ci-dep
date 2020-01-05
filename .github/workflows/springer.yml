@@ -1,0 +1,42 @@
+name: Springer
+
+on: [pull_request]
+
+
+jobs:
+  reviewdog:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+    - run: echo "::set-env name=RUBY_VERSION::$(cat .ruby-version)"
+    - run: echo "::set-env name=NODE_VERSION::$(cat .node-version)"
+    - uses: actions/setup-ruby@v1
+      with:
+        ruby-version: ${{ env.RUBY_VERSION }}
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    - uses: actions/cache@v1
+      with:
+        path: /opt/hostedtoolcache/Ruby/
+        key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gem-
+    - run: gem install bundler:$(cat Gemfile.lock | tail -1 | tr -d " ")
+    - run: bundle install --without default production test
+    - run: npm install --only=dev
+    - run: |
+          mkdir -p $HOME/bin && curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s -- -b $HOME/bin
+          echo ::add-path::$HOME/bin
+    - run: $GEM_PATH
+    - run: git fetch
+    - run: bundle exec rubocop -v
+    - run: npx eslint -v
+    - name: Run reviewdog
+      env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.PRONTO_GITHUB_TOKEN }}
+      run: |
+          reviewdog -reporter=github-pr-review -runners=rubocop,eslint
+
