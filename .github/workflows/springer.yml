@@ -33,7 +33,6 @@ jobs:
     - run: $GEM_PATH
     - run: git fetch
     - run: bundle exec rubocop -v
-    - run: npx eslint -v
     - name: Run reviewdog
       env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.PRONTO_GITHUB_TOKEN }}
