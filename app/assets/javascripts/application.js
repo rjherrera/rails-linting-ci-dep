@@ -16,5 +16,5 @@
 //= require_tree .
 
 function stuff() {
-  return 1
+  return 1 ;
 }

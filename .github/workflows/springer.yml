@@ -26,7 +26,7 @@ jobs:
           ${{ runner.os }}-gem-
     - run: gem install bundler:$(cat Gemfile.lock | tail -1 | tr -d " ")
     - run: bundle install --without default production test
-    - run: npm install --only=dev
+    - run: yarn install
     - run: |
           mkdir -p $HOME/bin && curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s -- -b $HOME/bin
           echo ::add-path::$HOME/bin
@@ -39,4 +39,7 @@ jobs:
           bundle exec rubocop | reviewdog -reporter=github-pr-review -f=rubocop -diff="git diff master"
           eslint . | reviewdog -reporter=github-pr-review -f=eslint -diff="git diff master"
           npx eslint . | reviewdog -reporter=github-pr-review -f=eslint -diff="git diff master"
+          which eslint
+          eslint -v
+          npx eslint -v
 
