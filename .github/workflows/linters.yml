@@ -51,5 +51,5 @@ jobs:
       env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.PRONTO_GITHUB_TOKEN }}
       run: |
-          bundle exec rubocop | reviewdog -reporter=github-pr-review -f=rubocop -diff="git diff master"
-          npx eslint . | reviewdog -reporter=github-pr-review -f=eslint -diff="git diff master"
+          bundle exec rubocop $(git diff master --name-only) | reviewdog -reporter=github-pr-review -f=rubocop
+          npx eslint $(git diff master --name-only) | reviewdog -reporter=github-pr-review -f=eslint
