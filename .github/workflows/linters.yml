@@ -1,10 +1,10 @@
-name: Springer
+name: Ateles
 
 on: [pull_request]
 
 
 jobs:
-  reviewdog:
+  linters:
 
     runs-on: ubuntu-latest
 
@@ -26,7 +26,7 @@ jobs:
     - name: Setup ruby cache
       uses: actions/cache@v1
       with:
-        path: vendor/bundle
+        path: /opt/hostedtoolcache/Ruby/
         key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
         restore-keys: |
           ${{ runner.os }}-gem-
@@ -40,7 +40,7 @@ jobs:
     - name: Install bundler, gems and yarn packages
       run: |
           gem install bundler:$(cat Gemfile.lock | tail -1 | tr -d " ")
-          bundle install --without default production test --path vendor/bundle
+          bundle install --without default production test
           yarn install
     - name: Install reviewdog
       run: |
@@ -53,4 +53,3 @@ jobs:
       run: |
           bundle exec rubocop | reviewdog -reporter=github-pr-review -f=rubocop -diff="git diff master"
           npx eslint . | reviewdog -reporter=github-pr-review -f=eslint -diff="git diff master"
-          npx eslint -v
