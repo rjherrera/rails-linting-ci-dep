@@ -16,5 +16,7 @@
 //= require_tree .
 
 function stuff() {
-  return 1 ;
+  var d = '11';
+
+  return 12 + 11;
 }
