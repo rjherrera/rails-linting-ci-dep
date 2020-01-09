@@ -55,7 +55,7 @@ jobs:
           command: |
             files=$(git diff master --name-only)
             echo $files
-            bundle exec rubocop $(echo $files) | reviewdog -reporter=github-pr-review -f=rubocop
+            bundle exec rubocop $(echo $files) | ./bin/reviewdog -reporter=github-pr-review -f=rubocop
 
 workflows:
   version: 2
