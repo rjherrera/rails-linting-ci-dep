@@ -53,7 +53,8 @@ jobs:
       - run:
           name: Run reviewdog
           command: |
-            files=$((git fetch origin master:master) && git diff master --name-only)
+            files=$(git diff master --name-only)
+            echo $files
             bundle exec rubocop $(echo $files) | reviewdog -reporter=github-pr-review -f=rubocop
 
 workflows:
