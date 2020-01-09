@@ -53,12 +53,23 @@ jobs:
       - run:
           name: Run rubocop
           shell: /bin/bash
-          command: bundle exec rubocop $(git diff master --name-only) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=rubocop
+          command: |
+            files=$(git diff master --name-only)
+            bundle exec rubocop $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=rubocop
 
       - run:
           name: Run eslint
           shell: /bin/bash
-          command: npx eslint $(git diff master --name-only) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=eslint
+          command: |
+            files=$(git diff master --name-only "*.js" "*.es6" "*.jsx" "*.vue")
+            npx eslint $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=eslint
+
+      - run:
+          name: Run stylelint
+          shell: /bin/bash
+          command: |
+            files=$(git diff master --name-only "*.scss" "*.css" "*.less")
+            npx stylelint $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=stylelint
 
 workflows:
   version: 2
