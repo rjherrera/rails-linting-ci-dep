@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  test:
     working_directory: ~/app
 
     docker:
@@ -51,16 +51,17 @@ jobs:
             curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s -- -b ./bin
 
       - run:
-          name: Run reviewdog
-          command: |
-            files=$(git diff master --name-only)
-            bundle exec rubocop $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=rubocop
-            npx eslint $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=eslint
+          name: Run rubocop
+          command: bundle exec rubocop $(git diff master --name-only) | ./bin/reviewdog -reporter=github-pr-review -f=rubocop
+
+      - run:
+          name: Run eslint
+          command: npx eslint $(git diff master --name-only) | ./bin/reviewdog -reporter=github-pr-review -f=eslint
 
 workflows:
   version: 2
   test_and_lint:
     jobs:
-      - build
+      - test
       - lint:
           context: org-global
