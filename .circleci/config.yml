@@ -37,13 +37,13 @@ jobs:
             - vendor/bundle
 
       # Install node dependencies
-      - run: yarn install
+      - run: yarn install --frozen-lockfile
 
       # Cache yarn dependencies
       - save_cache:
           key: linting-dependencies-yarn-{{ checksum "yarn.lock" }}
           paths:
-            - node_modules
+            - ~/.cache/yarn
 
       - run:
           name: Install reviewdog
@@ -62,14 +62,14 @@ jobs:
           shell: /bin/bash
           command: |
             files=$(git diff master --name-only "*.js" "*.es6" "*.jsx" "*.vue")
-            npx eslint $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=eslint
+            yarn run eslint $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=eslint
 
       - run:
           name: Run stylelint
           shell: /bin/bash
           command: |
             files=$(git diff master --name-only "*.scss" "*.css" "*.less")
-            npx stylelint $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=stylelint
+            yarn run stylelint $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=stylelint
 
 workflows:
   version: 2

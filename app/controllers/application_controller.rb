@@ -1,5 +1,8 @@
 class ApplicationController < ActionController::Base
-private
-  def x f, c
+  def x
+    if !1
+      return 1
+    end
+    return 1
   end
 end

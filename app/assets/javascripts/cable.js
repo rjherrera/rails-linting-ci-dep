@@ -12,4 +12,4 @@
 
 }).call(this);
 
-console.log(122);
+const f = 1;
