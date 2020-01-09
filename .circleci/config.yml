@@ -58,7 +58,7 @@ jobs:
       - run:
           name: Run eslint
           shell: /bin/bash
-          command: npx eslint $(git diff master --name-only) | ./bin/reviewdog -reporter=github-pr-review -f=eslint
+          command: npx eslint $(git diff master --name-only) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=eslint
 
 workflows:
   version: 2
