@@ -55,3 +55,10 @@ jobs:
           command: |
             files=$((git fetch origin master:master) && git diff master --name-only)
             bundle exec rubocop $(echo $files) | reviewdog -reporter=github-pr-review -f=rubocop
+
+workflows:
+  version: 2
+  test_and_lint:
+    jobs:
+      - build
+      - lint
