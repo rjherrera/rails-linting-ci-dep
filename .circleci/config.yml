@@ -11,10 +11,47 @@ jobs:
     - setup_remote_docker
 
     - run: docker info
-    - run: docker-compose -f docker-compose.ci.yml pull
-    - run: docker-compose -f docker-compose.ci.yml build test
-    - run: bin/cibuild services
-    - run: bin/cibuild deps
+  lint:
+    docker:
+      - image: circleci/ruby:2.6-node
+    steps:
+      - checkout
 
-    - run: bin/cibuild db
-    - run: bin/cibuild tests
+      # Restore cache
+      - restore_cache:
+          keys:
+          - linting-dependencies-bundle-{{ checksum "Gemfile.lock" }}
+          - linting-dependencies-yarn-{{ checksum "yarn.lock" }}
+
+      # Install ruby dependencies
+      - run:
+          name: Configure Bundler
+          command: |
+            gem install bundler:$(cat Gemfile.lock | tail -1 | tr -d " ")
+      - run: bundle install --jobs=4 --retry=3 --path vendor/bundle --without "default production test" --with "development"
+
+      # Cache bundle dependencies
+      - save_cache:
+          key: linting-dependencies-bundle-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+
+      # Install node dependencies
+      - run: yarn install
+
+      # Cache yarn dependencies
+      - save_cache:
+          key: linting-dependencies-yarn-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules
+
+      - run:
+          name: Install reviewdog
+          command: |
+            curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s -- -b ./bin
+
+      - run:
+          name: Run reviewdog
+          command: |
+            files=$((git fetch origin master:master) && git diff master --name-only)
+            bundle exec rubocop $(echo $files) | reviewdog -reporter=github-pr-review -f=rubocop
