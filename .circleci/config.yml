@@ -62,4 +62,5 @@ workflows:
   test_and_lint:
     jobs:
       - build
-      - lint
+      - lint:
+          context: org-global
