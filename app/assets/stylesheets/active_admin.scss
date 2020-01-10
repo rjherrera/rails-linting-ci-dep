@@ -14,11 +14,9 @@
 $skinActiveColor: #001CEE;
 $skinHeaderBck: #002744;
 $panelHeaderBck: #002744;
-//$skinLogo: $skinHeaderBck image-url("logo_admin.png") no-repeat center center;
+$skinLogo: $skinHeaderBck image-url("logo_admin.png") no-repeat center center;
 
 @import "active_skin";
-
-$otherColor: #FFF;
 
 // Overriding any non-variable SASS must be done after the fact.
 // For example, to change the default status-tag color:
