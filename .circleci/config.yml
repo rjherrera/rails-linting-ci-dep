@@ -54,32 +54,28 @@ jobs:
           name: Run rubocop
           shell: /bin/bash
           command: |
-            files=$(git diff master --name-only)
+            files=$(git diff origin/master --name-only)
             bundle exec rubocop $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=rubocop
 
       - run:
           name: Run eslint
           shell: /bin/bash
           command: |
-            files=$(git diff master --name-only "*.js" "*.es6" "*.jsx" "*.vue")
+            files=$(git diff origin/master --name-only "*.js" "*.es6" "*.jsx" "*.vue")
             yarn run eslint $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=eslint
 
       - run:
           name: Run stylelint
           shell: /bin/bash
           command: |
-            files=$(git diff master --name-only "*.scss" "*.css" "*.less")
+            files=$(git diff origin/master --name-only "*.scss" "*.css" "*.less")
             yarn run stylelint $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=stylelint
 
-      - run: git diff master --name-only
+      - run: git diff origin/master --name-only
 
-      - run: yarn run eslint -v
+      - run: yarn run eslint $(git diff origin/master --name-only)
 
-      - run: yarn run stylelint -v
-
-      - run: yarn run eslint $(git diff master --name-only)
-
-      - run: yarn run stylelint $(git diff master --name-only "*.scss" "*.css" "*.less")
+      - run: yarn run stylelint $(git diff origin/master --name-only "*.scss" "*.css" "*.less")
 
 workflows:
   version: 2

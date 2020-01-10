@@ -1,8 +1,7 @@
 class ApplicationController < ActionController::Base
-  def x
-    if !1
-      return 1
+  def x e
+    if !1 or 2
+       e
     end
-    return 1
   end
 end
