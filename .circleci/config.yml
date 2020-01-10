@@ -71,12 +71,6 @@ jobs:
             files=$(git diff origin/master --name-only "*.scss" "*.css" "*.less")
             yarn run stylelint $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=stylelint
 
-      - run: git diff origin/master --name-only
-
-      - run: yarn run eslint $(git diff origin/master --name-only)
-
-      - run: yarn run stylelint $(git diff origin/master --name-only "*.scss" "*.css" "*.less")
-
 workflows:
   version: 2
   test_and_lint:
