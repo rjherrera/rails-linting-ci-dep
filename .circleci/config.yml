@@ -61,14 +61,14 @@ jobs:
           name: Run eslint
           shell: /bin/bash
           command: |
-            files=$(git diff origin/master --name-only "*.js" "*.es6" "*.jsx" "*.vue")
+            files=$(git diff origin/master --name-only)
             yarn run eslint $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=eslint
 
       - run:
           name: Run stylelint
           shell: /bin/bash
           command: |
-            files=$(git diff origin/master --name-only "*.scss" "*.css" "*.less")
+            files=$(git diff origin/master --name-only)
             yarn run stylelint $(echo $files) 2>&1 | ./bin/reviewdog -reporter=github-pr-review -f=stylelint
 
 workflows:
