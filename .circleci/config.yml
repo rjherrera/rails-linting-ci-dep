@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  test:
     working_directory: ~/app
 
     docker:
@@ -11,10 +11,72 @@ jobs:
     - setup_remote_docker
 
     - run: docker info
-    - run: docker-compose -f docker-compose.ci.yml pull
-    - run: docker-compose -f docker-compose.ci.yml build test
-    - run: bin/cibuild services
-    - run: bin/cibuild deps
 
-    - run: bin/cibuild db
-    - run: bin/cibuild tests
+  lint:
+    docker:
+      - image: circleci/ruby:2.6-node
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - linting-dependencies-bundle-{{ checksum "Gemfile.lock" }}
+          - linting-dependencies-yarn-{{ checksum "yarn.lock" }}
+
+      - run: gem install bundler:$(cat Gemfile.lock | tail -1 | tr -d " ")
+
+      - run: bundle install --jobs=4 --retry=3 --path vendor/bundle --without "default production test" --with "development"
+
+      # Cache bundle dependencies
+      - save_cache:
+          key: linting-dependencies-bundle-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+
+      - run: yarn install --frozen-lockfile
+
+      # Cache yarn dependencies
+      - save_cache:
+          key: linting-dependencies-yarn-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+
+      - run:
+          name: Install reviewdog
+          command: |
+            curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b ./bin
+
+      - run:
+          name: Run rubocop
+          shell: /bin/bash
+          command: |
+            files=$(git diff origin/master --name-only)
+            if bundle exec rubocop -v &>/dev/null; then
+                bundle exec rubocop $(echo $files) | ./bin/reviewdog -reporter=github-pr-review -f=rubocop
+            fi
+
+      - run:
+          name: Run eslint
+          shell: /bin/bash
+          command: |
+            files=$(git diff origin/master --name-only)
+            if yarn run eslint -v &>/dev/null; then
+                yarn run eslint $(echo $files) | ./bin/reviewdog -reporter=github-pr-review -f=eslint
+            fi
+
+      - run:
+          name: Run stylelint
+          shell: /bin/bash
+          command: |
+            files=$(git diff origin/master --name-only "*.scss" "*.css" "*.less")
+            if yarn run stylelint -v &>/dev/null; then
+                yarn run stylelint $(echo $files) | ./bin/reviewdog -reporter=github-pr-review -f=stylelint
+            fi
+
+workflows:
+  version: 2
+  test_and_lint:
+    jobs:
+      - test
+      - lint:
+          context: org-global
