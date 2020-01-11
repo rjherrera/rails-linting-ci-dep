@@ -1,0 +1,67 @@
+name: Ateles
+
+on: [pull_request]
+
+
+jobs:
+  linters:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+    - name: Get ruby and node versions
+      run: |
+        echo "::set-env name=RUBY_VERSION::$(cat .ruby-version)"
+        echo "::set-env name=NODE_VERSION::$(cat .node-version)"
+    - uses: actions/setup-ruby@v1
+      with:
+        ruby-version: ${{ env.RUBY_VERSION }}
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    - name: Get yarn cache directory
+      id: yarn-cache
+      run: echo "::set-output name=dir::$(yarn cache dir)"
+    - name: Setup ruby cache
+      uses: actions/cache@v1
+      with:
+        path: /opt/hostedtoolcache/Ruby/
+        key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gem-
+    - name: Setup yarn cache
+      uses: actions/cache@v1
+      with:
+        path: ${{ steps.yarn-cache.outputs.dir }}
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+    - name: Install bundler, gems and yarn packages
+      run: |
+          gem install bundler:$(cat Gemfile.lock | tail -1 | tr -d " ")
+          bundle install --without "default production test" --with "development"
+          yarn install
+    - name: Install reviewdog
+      run: |
+          mkdir -p $HOME/bin && curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s -- -b $HOME/bin
+          echo ::add-path::$HOME/bin
+    - name: Run rubocop
+      env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.REVIEWDOG_GITHUB_API_TOKEN }}
+      run: |
+          files=$((git fetch origin master:master) && git diff master --name-only)
+          bundle exec rubocop $(echo $files) | reviewdog -reporter=github-pr-review -f=rubocop
+    - name: Run eslint
+      env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.REVIEWDOG_GITHUB_API_TOKEN }}
+      run: |
+          files=$((git fetch origin master:master) && git diff master --name-only)
+          yarn run eslint $(echo $files) | reviewdog -reporter=github-pr-review -f=eslint
+    - name: Run stylelint
+      env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.REVIEWDOG_GITHUB_API_TOKEN }}
+      run: |
+          files=$((git fetch origin master:master) && git diff master --name-only "*.scss" "*.css" "*.less")
+          yarn run stylelint $(echo $files) | reviewdog -reporter=github-pr-review -f=stylelint
+
