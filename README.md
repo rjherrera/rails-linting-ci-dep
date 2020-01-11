@@ -1,5 +1,14 @@
-# T0 
+# Rails Linting CI
 This is a Rails application, initially generated using [Potassium](https://github.com/platanus/potassium) by Platanus.
+
+The idea of this project is to try different approaches to the linting phase of the development process. This repository showcases 2 main alternatives:
+
+1. Use CircleCI workflows, adding another job alongside the original for testing. This `lint` job runs parallel, and uses [reviewdog](https://github.com/reviewdog/reviewdog) to format error messages from linters, and comment pull requests.
+2. Use GitHub Actions, adding a new CI build just for the linting purpose. It also uses reviewdog.
+
+Both approaches work fine, but CircleCI provides some perks, like shared secrets between the whole organization through [contexts](https://circleci.com/docs/2.0/contexts/), so that the token for reviewdog is not needed in each repository's secrets.
+
+The linters being used in both CI alternatives are `rubocop`, `eslint` and `stylelint`. Every linter is installed in the CI machine with the version locked in either the `Gemfile.lock` or `yarn.lock`. They also use local rules hosted in the repo.
 
 ## Local installation
 
